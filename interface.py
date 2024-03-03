@@ -1,14 +1,7 @@
 import tkinter as tk
-import transformers
 import time
 from PIL import Image,ImageTk
-from startyolo import start_yolo
-from startresnet1 import start_resnet
-from startdetrresnet import start_detr
-from startsegment import start_segment
-from functools import partial
-from robomaster import robot
-#image = cv2.imread("image.jpg")
+import cv2
 def stop_connection():
     pass
     #ep_camera.stop_video_stream()
@@ -18,24 +11,17 @@ def change_window_content():
         widget.destroy()
 
     ep_camera = None
-    try:
-        ep_robot = robot.Robot()
-        ep_robot.initialize()
-        ep_camera = ep_robot.camera
-    except Exception:
-        print('Соединение не установлено')
-        # Создаем 4 независимых кнопки
     print('Соединение установлено')
     time.sleep(1)
-    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15, command=lambda: start_yolo(ep_camera))
-    button2 = tk.Button(main_window, text="detr resnet 101", font=("Arial", 16), width=15,command=lambda:start_resnet(ep_camera))
-    button3 = tk.Button(main_window, text="detr resnet 50", font=("Arial", 16), width=15, command=start_detr)
-    button4 = tk.Button(main_window, text="Segmentation", font=("Arial", 16), width=15, command=start_segment)
-    panel = tk.Label(main_window)
+    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15)
+    button2 = tk.Button(main_window, text="detr resnet 101", font=("Arial", 16), width=15)
+    button3 = tk.Button(main_window, text="detr resnet 50", font=("Arial", 16), width=15)
+    button4 = tk.Button(main_window, text="Segmentation", font=("Arial", 16), width=15)
+    panel = tk.Label(main_window)  # initialize image panel
     panel.pack(pady=10)
     # Размещаем кнопки
     for button in [button1, button2, button3, button4]:
-        button.pack(side=tk.LEFT, anchor=tk.SE)
+        button.pack(side=tk.LEFT,anchor=tk.SE)
     image = Image.open('background1.png')
     imgtk = ImageTk.PhotoImage(image)
     panel.imgtk = imgtk

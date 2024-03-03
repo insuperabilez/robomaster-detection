@@ -12,9 +12,12 @@ def start_resnet(ep_camera):
     processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
     model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
     ep_camera.start_video_stream(display=False)
+    #ep_camera.start_video_stream(display=False,resolution=camera.STREAM_360P)
     for i in range(100):
         img = ep_camera.read_cv2_image()
-
+        #img = ep_camera.read_cv2_image(strategy="newest")
+        #img = Image.fromarray(img)
+        #img= img.reshape(720, 1280,3) работает
         image = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
         print(image.size)
         inputs = processor(images=image, return_tensors="pt")

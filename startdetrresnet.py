@@ -1,6 +1,6 @@
 from transformers import DetrImageProcessor, DetrForObjectDetection
 import torch
-from PIL import Image
+from PIL import Image, ImageTk
 import numpy as np
 import cv2
 image = Image.open('image.jpg')

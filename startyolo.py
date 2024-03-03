@@ -59,9 +59,11 @@ def start_yolo(ep_camera):
         cv2.imshow('Detection', img)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             window_closed = True
+            ep_camera.stop_video_stream()
             break
 
             # Проверка закрытия окна
         if cv2.getWindowProperty("Detection", cv2.WND_PROP_VISIBLE) < 1:
             window_closed = True
+            ep_camera.stop_video_stream()
             break
