@@ -19,7 +19,7 @@ def start_yolo(ep_camera):
                   "teddy bear", "hair drier", "toothbrush"
                   ]
     window_closed = False
-    ep_camera.start_video_stream(display=False)
+    ep_camera.start_video_stream(display=False,resolution="360p")
     while not window_closed:
         #img=image.copy()
         img = ep_camera.read_cv2_image()
