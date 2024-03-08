@@ -7,10 +7,12 @@ from PIL import Image,ImageTk
 from startyolo import start_yolo
 from startresnet101 import start_resnet101
 from startresnet50 import start_resnet50
-from startsegment import start_segment
+from startmobilenet import start_mobilenet
 from functools import partial
 from robomaster import robot
+from torch.cuda import is_available as cuda_available
 #image = cv2.imread("image.jpg")
+device = 'cuda' if cuda_available() else 'cpu'
 ep_camera = None
 def stop_connection():
     global ep_camera
@@ -34,10 +36,10 @@ def change_window_content():
         print('Соединение не установлено')
     print('Соединение установлено')
     time.sleep(1)
-    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15, command=lambda: start_yolo(ep_camera))
-    button2 = tk.Button(main_window, text="resnet 101", font=("Arial", 16), width=15,command=lambda:start_resnet101(ep_camera))
-    button3 = tk.Button(main_window, text="resnet 50", font=("Arial", 16), width=15, command=lambda:start_resnet50(ep_camera))
-    button4 = tk.Button(main_window, text="Segmentation", font=("Arial", 16), width=15, command=lambda:start_segment(ep_camera))
+    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15, command=lambda: start_yolo(ep_camera,device))
+    button2 = tk.Button(main_window, text="resnet 101", font=("Arial", 16), width=15,command=lambda:start_resnet101(ep_camera,device))
+    button3 = tk.Button(main_window, text="resnet 50", font=("Arial", 16), width=15, command=lambda:start_resnet50(ep_camera,device))
+    button4 = tk.Button(main_window, text="mobilenet ssd", font=("Arial", 16), width=15, command=lambda:start_mobilenet(ep_camera,device))
     panel = tk.Label(main_window)
     panel.pack(pady=10)
     

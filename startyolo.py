@@ -1,12 +1,9 @@
 from ultralytics import YOLO
 import cv2
 import math
-#image = cv2.imread("image.jpg")
-def start_yolo(ep_camera):
-
+def start_yolo(ep_camera,device):
     model = YOLO("yolo-Weights/yolov8n.pt")
-
-    # Настраиваем видеопоток с веб-камеры
+    model = model.to(device)
     classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
                   "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
                   "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
@@ -24,36 +21,24 @@ def start_yolo(ep_camera):
         #img=image.copy()
         img = ep_camera.read_cv2_image()
         results = model(img, stream=True)
-
-        # coordinates
         for r in results:
             boxes = r.boxes
-
             for box in boxes:
-                # bounding box
                 x1, y1, x2, y2 = box.xyxy[0]
-                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
-
-                # put box in cam
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-                # confidence
                 confidence = math.ceil((box.conf[0] * 100)) / 100
                 print("Confidence --->", confidence)
 
-                # class name
                 cls = int(box.cls[0])
                 print("Class name -->", classNames[cls])
 
-
-                # object details
                 org = [x1, y1]
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale = 0.5
                 color = (0, 255, 0)
                 thickness = 2
-
-
                 cv2.putText(img, model.names[cls], org, font, fontScale, color, thickness)
 
         cv2.imshow('Detection', img)
@@ -61,8 +46,6 @@ def start_yolo(ep_camera):
             window_closed = True
             ep_camera.stop_video_stream()
             break
-
-            # Проверка закрытия окна
         if cv2.getWindowProperty("Detection", cv2.WND_PROP_VISIBLE) < 1:
             window_closed = True
             ep_camera.stop_video_stream()
