@@ -18,7 +18,7 @@ def start_resnet50(ep_camera,device):
         inputs.to(device)
         outputs = model(**inputs)
 
-        target_sizes = torch.tensor([image.size[::-1]]).to(device)
+        target_sizes = torch.tensor([img.size[::-1]]).to(device)
         results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.9)[0]
 
         for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
