@@ -1,23 +1,22 @@
-from transformers import DetrImageProcessor, DetrForObjectDetection
-import torch
-from PIL import Image
-import numpy as np
-from robomaster import robot
 import cv2
-#image = Image.open('image.jpg')
-#img = cv2.cvtColor(np.array(image),cv2.COLOR_RGB2BGR)
-def start_resnet101(ep_camera,device):
-    window_closed=False
+import torch
+from transformers import DetrImageProcessor, DetrForObjectDetection
+
+
+# image = Image.open('image.jpg')
+# img = cv2.cvtColor(np.array(image),cv2.COLOR_RGB2BGR)
+def start_resnet101(ep_camera, device):
+    window_closed = False
     processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
     model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
-    model=model.to(device)
-    ep_camera.start_video_stream(display=False,resolution="360p")
-    #ep_camera.start_video_stream(display=False,resolution=camera.STREAM_360P)
+    model = model.to(device)
+    ep_camera.start_video_stream(display=False, resolution="360p")
+    # ep_camera.start_video_stream(display=False,resolution=camera.STREAM_360P)
     while not window_closed:
         img = ep_camera.read_cv2_image(strategy="newest")
-        #img = Image.fromarray(img)
-        img= img.reshape(360,640,3)
-        #image = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
+        # img = Image.fromarray(img)
+        img = img.reshape(360, 640, 3)
+        # image = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
         inputs = processor(images=img, return_tensors="pt")
         inputs.to(device)
         outputs = model(**inputs)
@@ -27,8 +26,8 @@ def start_resnet101(ep_camera,device):
         for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
             box = [round(i, 2) for i in box.tolist()]
             print(
-                    f"Detected {model.config.id2label[label.item()]} with confidence "
-                    f"{round(score.item(), 3)} at location {box}"
+                f"Detected {model.config.id2label[label.item()]} with confidence "
+                f"{round(score.item(), 3)} at location {box}"
             )
         boxes = [box.tolist() for box in results["boxes"]]
         for box, label in zip(boxes, results["labels"]):
@@ -46,4 +45,3 @@ def start_resnet101(ep_camera,device):
             window_closed = True
             ep_camera.stop_video_stream()
             break
-

@@ -1,7 +1,10 @@
-from ultralytics import YOLO
-import cv2
 import math
-def start_yolo(ep_camera,device):
+
+import cv2
+from ultralytics import YOLO
+
+
+def start_yolo(ep_camera, device):
     model = YOLO("yolo-Weights/yolov8n.pt")
     model = model.to(device)
     classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
@@ -16,9 +19,9 @@ def start_yolo(ep_camera,device):
                   "teddy bear", "hair drier", "toothbrush"
                   ]
     window_closed = False
-    ep_camera.start_video_stream(display=False,resolution="360p")
+    ep_camera.start_video_stream(display=False, resolution="360p")
     while not window_closed:
-        #img=image.copy()
+        # img=image.copy()
         img = ep_camera.read_cv2_image()
         results = model(img, stream=True)
         for r in results:
@@ -41,6 +44,13 @@ def start_yolo(ep_camera,device):
                 thickness = 2
                 cv2.putText(img, model.names[cls], org, font, fontScale, color, thickness)
 
+        """
+        img = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2R)
+        img = Image.fromarray(img)
+        imgtk = ImageTk.PhotoImage(image=img)
+        panel.imgtk = imgtk
+        panel.config(image=imgtk)
+         """
         cv2.imshow('Detection', img)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             window_closed = True

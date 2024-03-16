@@ -1,19 +1,21 @@
-import tkinter as tk
-from tkinter.messagebox import askokcancel
-import transformers
 import sys
 import time
-from PIL import Image,ImageTk
-from startyolo import start_yolo
+import tkinter as tk
+from tkinter.messagebox import askokcancel
+
+from PIL import Image, ImageTk
+from robomaster import robot
+from startmobilenet import start_mobilenet
 from startresnet101 import start_resnet101
 from startresnet50 import start_resnet50
-from startmobilenet import start_mobilenet
-from functools import partial
-from robomaster import robot
+from startyolo import start_yolo
 from torch.cuda import is_available as cuda_available
-#image = cv2.imread("image.jpg")
+
+# image = cv2.imread("image.jpg")
 device = 'cuda' if cuda_available() else 'cpu'
 ep_camera = None
+
+
 def stop_connection():
     global ep_camera
     global main_window
@@ -23,6 +25,7 @@ def stop_connection():
     if askokcancel("Выход", "Закрыть приложение?"):
         main_window.destroy()
         sys.exit()
+
 
 def change_window_content():
     global ep_camera
@@ -36,13 +39,17 @@ def change_window_content():
         print('Соединение не установлено')
     print('Соединение установлено')
     time.sleep(1)
-    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15, command=lambda: start_yolo(ep_camera,device))
-    button2 = tk.Button(main_window, text="resnet 101", font=("Arial", 16), width=15,command=lambda:start_resnet101(ep_camera,device))
-    button3 = tk.Button(main_window, text="resnet 50", font=("Arial", 16), width=15, command=lambda:start_resnet50(ep_camera,device))
-    button4 = tk.Button(main_window, text="mobilenet ssd", font=("Arial", 16), width=15, command=lambda:start_mobilenet(ep_camera,device))
+    button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15,
+                        command=lambda: start_yolo(ep_camera, device))
+    button2 = tk.Button(main_window, text="resnet 101", font=("Arial", 16), width=15,
+                        command=lambda: start_resnet101(ep_camera, device))
+    button3 = tk.Button(main_window, text="resnet 50", font=("Arial", 16), width=15,
+                        command=lambda: start_resnet50(ep_camera, device))
+    button4 = tk.Button(main_window, text="mobilenet ssd", font=("Arial", 16), width=15,
+                        command=lambda: start_mobilenet(ep_camera, device))
     panel = tk.Label(main_window)
     panel.pack(pady=10)
-    
+
     for button in [button1, button2, button3, button4]:
         button.pack(side=tk.LEFT, anchor=tk.SE)
         if ep_camera is None:
@@ -56,13 +63,14 @@ def change_window_content():
     disconnect_button = tk.Button(main_window, text="X", font=("Arial", 16), width=20, command=stop_connection)
     disconnect_button.pack(side=tk.BOTTOM, anchor=tk.SE)
 
+
 main_window = tk.Tk()
 main_window.title("Главное окно")
 main_window.geometry("800x600")
 
-connect_button = tk.Button(main_window, text="Подключиться", font=("Arial", 16), width=20,command=change_window_content)
+connect_button = tk.Button(main_window, text="Подключиться", font=("Arial", 16), width=20,
+                           command=change_window_content)
 connect_button.pack(pady=40)
 
 main_window.protocol("WM_DELETE_WINDOW", stop_connection)
 main_window.mainloop()
-

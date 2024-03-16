@@ -1,19 +1,19 @@
-from transformers import DetrImageProcessor, DetrForObjectDetection
-import torch
-from PIL import Image, ImageTk
-import numpy as np
 import cv2
-#image = Image.open('image.jpg')
-#img = cv2.cvtColor(np.array(image),cv2.COLOR_RGB2BGR)
-def start_resnet50(ep_camera,device):
+import torch
+from transformers import DetrImageProcessor, DetrForObjectDetection
+
+
+# image = Image.open('image.jpg')
+# img = cv2.cvtColor(np.array(image),cv2.COLOR_RGB2BGR)
+def start_resnet50(ep_camera, device):
     processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50", revision="no_timm")
     model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50", revision="no_timm")
-    ep_camera.start_video_stream(display=False,resolution="360p")
-    window_closed=False
-    model=model.to(device)
+    ep_camera.start_video_stream(display=False, resolution="360p")
+    window_closed = False
+    model = model.to(device)
     while not window_closed:
         img = ep_camera.read_cv2_image(strategy="newest")
-        img= img.reshape(360, 640,3)
+        img = img.reshape(360, 640, 3)
         inputs = processor(images=img, return_tensors="pt")
         inputs.to(device)
         outputs = model(**inputs)
@@ -24,8 +24,8 @@ def start_resnet50(ep_camera,device):
         for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
             box = [round(i, 2) for i in box.tolist()]
             print(
-                    f"Detected {model.config.id2label[label.item()]} with confidence "
-                    f"{round(score.item(), 3)} at location {box}"
+                f"Detected {model.config.id2label[label.item()]} with confidence "
+                f"{round(score.item(), 3)} at location {box}"
             )
         boxes = [box.tolist() for box in results["boxes"]]
         for box, label in zip(boxes, results["labels"]):
