@@ -94,6 +94,7 @@ class Detector:
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
             return frame
     def start_stream(self):
+        self.load_model()
         self.ep_camera.start_video_stream(display=False, resolution="360p")
         while not self.stop_stream:
             img = self.ep_camera.read_cv2_image(strategy='newest')
