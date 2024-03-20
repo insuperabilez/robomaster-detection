@@ -1,19 +1,22 @@
 from ultralytics import YOLO
-
-
-
+import cv2
+import math
+from PIL import Image,ImageTk
+import threading
 class Detector:
     def __init__(self,ep_robot,nn,panel,device='cpu'):
         self.ep_robot = ep_robot
+        #self.display_thread = threading.Thread(target=self.start_stream)
         self.panel = panel
         self.device = device
         self.stop_stream = False
         self.ep_camera = self.ep_robot.camera
         self.nn=nn
+        self.load_model()
     def load_model(self):
         #self.nn=nn
         if self.nn=='yolo':
-            self.model=YOLO("yolo-Weights/yolov8n.pt").to(device)
+            self.model=YOLO("yolo-Weights/yolov8n.pt").to(self.device)
             self.classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
                   "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
                   "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
@@ -53,15 +56,15 @@ class Detector:
                     print("Confidence --->", confidence)
 
                     cls = int(box.cls[0])
-                    print("Class name -->", model.names[cls])
+                    print("Class name -->", self.model.names[cls])
 
                     org = [x1, y1]
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     fontScale = 0.5
                     color = (0, 255, 0)
                     thickness = 2
-                    cv2.putText(img, model.names[cls], org, font, fontScale, color, thickness)
-                    cv2.putText(img, str(confidence), [x2-10,y1], font, fontScale, color, thickness)
+                    cv2.putText(img, self.model.names[cls], org, font, fontScale, color, thickness)
+                    cv2.putText(img, str(confidence), [x2-10,y1-10], font, fontScale, color, thickness)
             return img
         elif self.nn=='mobilenet':
             frame = img.reshape(360, 640, 3)
@@ -90,11 +93,10 @@ class Detector:
                         y_top_left = max(y_top_left, h)
                         cv2.rectangle(frame, (x_top_left, y_top_left - h),
                                       (x_top_left + w, y_top_left + t), (0, 0, 0), cv2.FILLED)
-                        cv2.putText(frame, label, (x_top_left, y_top_left),
+                        cv2.putText(frame, label, (x_top_left, y_top_left-10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
             return frame
     def start_stream(self):
-        self.load_model()
         self.ep_camera.start_video_stream(display=False, resolution="360p")
         while not self.stop_stream:
             img = self.ep_camera.read_cv2_image(strategy='newest')

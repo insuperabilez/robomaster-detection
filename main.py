@@ -1,12 +1,14 @@
 import gc
 import time
+import sys
 import tkinter as tk
-
+import threading
 from Detector import Detector
 from PIL import Image, ImageTk
 from pynput import keyboard
 from robomaster import robot
 from startresnet101 import start_resnet101
+from ultralytics import YOLO
 from torch.cuda import is_available as cuda_available
 
 device = 'cuda' if cuda_available() else 'cpu'
@@ -51,7 +53,7 @@ def stop_connection(buttons):
     if ep_camera is not None:
         ep_camera.stop_video_stream()
     for button in buttons:
-        button.config(state=tk.ENABLED)
+        button.config(state=tk.NORMAL)
 
 
 def create_detector(ep_robot, nn, panel, buttons, device='cpu'):
@@ -59,7 +61,8 @@ def create_detector(ep_robot, nn, panel, buttons, device='cpu'):
         button.config(state=tk.DISABLED)
     global detector
     detector = Detector(ep_robot, nn, panel, device)
-    detector.start_stream()
+    stream = threading.Thread(target=detector.start_stream)
+    stream.start()
     del detector
     gc.collect()
 
@@ -67,6 +70,7 @@ def create_detector(ep_robot, nn, panel, buttons, device='cpu'):
 def change_window_content():
     global ep_camera
     global detector
+    global device
     for widget in main_window.winfo_children():
         widget.destroy()
     try:
@@ -75,6 +79,7 @@ def change_window_content():
         ep_camera = ep_robot.camera
     except Exception:
         print('Соединение не установлено')
+        sys.exit()
     print('Соединение установлено')
     time.sleep(1)
     button1 = tk.Button(main_window, text="YOLO8n ", font=("Arial", 16), width=15,
