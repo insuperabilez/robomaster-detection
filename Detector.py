@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import cv2
 import math
+
 from PIL import Image,ImageTk
 import threading
 class Detector:
@@ -41,6 +42,10 @@ class Detector:
             if self.device == 'cuda':
                 self.model.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
                 self.model.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        elif self.nn=="resnet":
+            self.processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
+            self.model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-101", revision="no_timm")
+            self.model = self.model.to(self.device)
 
     def process_image(self,img):
         if self.nn=='yolo':
@@ -64,7 +69,7 @@ class Detector:
                     color = (0, 255, 0)
                     thickness = 2
                     cv2.putText(img, self.model.names[cls], org, font, fontScale, color, thickness)
-                    cv2.putText(img, str(confidence), [x2-10,y1-10], font, fontScale, color, thickness)
+                    cv2.putText(img, str(confidence), [x2,y1+10], font, fontScale, color, thickness)
             return img
         elif self.nn=='mobilenet':
             frame = img.reshape(360, 640, 3)
@@ -96,6 +101,28 @@ class Detector:
                         cv2.putText(frame, label, (x_top_left, y_top_left-10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
             return frame
+        elif self.nn=="resnet":
+            img = img.flatten()
+            img=img.reshape(360,640,3)
+            inputs = self.processor(images=img, return_tensors="pt")
+            inputs.to(self.device)
+            outputs = self.model(**inputs)
+            target_sizes = torch.tensor([img.shape[0:2]]).to(self.device)
+            results = self.processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.9)[0]
+            for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+                box = [round(i, 2) for i in box.tolist()]
+                print(
+                    f"Detected {self.model.config.id2label[label.item()]} with confidence "
+                    f"{round(score.item(), 3)} at location {box}"
+                )
+            boxes = [box.tolist() for box in results["boxes"]]
+            for box, label in zip(boxes, results["labels"]):
+                x1, y1, x2, y2 = box
+                class_name = self.model.config.id2label[label.item()]
+                cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                cv2.putText(img, f"{class_name}", (int(x1), int(y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0),
+                            2)
+            return img
     def start_stream(self):
         self.ep_camera.start_video_stream(display=False, resolution="360p")
         while not self.stop_stream:

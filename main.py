@@ -38,9 +38,9 @@ def on_press(key):
 def on_release(key):
     global ep_robot
     ep_robot.chassis.drive_speed(x=0, y=0, z=0, timeout=5)
-    if key == keyboard.Key.esc:
-        ep_robot.close()
-        return False
+    #if key == keyboard.Key.esc:
+        #ep_robot.close()
+        #return False
 
 
 def keyboard_listener():
@@ -50,10 +50,13 @@ def keyboard_listener():
 
 def stop_connection(buttons):
     global ep_camera
+    global detector
     if ep_camera is not None:
         ep_camera.stop_video_stream()
     for button in buttons:
         button.config(state=tk.NORMAL)
+    detector=None
+    gc.collect()
 
 
 def create_detector(ep_robot, nn, panel, buttons, device='cpu'):
@@ -97,7 +100,7 @@ def change_window_content():
         if ep_camera is None:
             button.config(state=tk.DISABLED)
 
-    image = Image.open('background1.png')
+    image = Image.open('background.png')
     imgtk = ImageTk.PhotoImage(image)
     panel.imgtk = imgtk
     panel.config(image=imgtk)
